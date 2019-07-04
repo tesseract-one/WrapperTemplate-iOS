@@ -1,0 +1,8 @@
+{
+  "resources": {
+    "appIcon": "./icon.png",
+    "splashImage": "./splash-image.png"
+  },
+  "statusBarColor": "#222222",
+  "isLightStatusBar": true
+}

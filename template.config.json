@@ -1,0 +1,10 @@
+{
+  "templateResources": {
+    "appIcon": "./icon.png",
+    "splashImage": "./splash-image.png"
+  },
+  "appConfig": {
+    "statusBarColor": "#222222",
+    "isLightStatusBar": true
+  }
+}
