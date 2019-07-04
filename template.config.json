@@ -1,7 +1,10 @@
 {
-  "templateResources": {
-    "appIcon": "./icon.png",
-    "splashImage": "./splash-image.png"
+  "template": {
+    "resources": {
+      "appIcon": "./icon.png",
+      "splashImage": "./splash-image.png"
+    },
+    "iosBundleId": ""
   },
   "appConfig": {
     "statusBarColor": "#222222",
