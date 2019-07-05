@@ -1,9 +1,9 @@
 ---
-to: <%= h.changeCase.paramCase(name) %>/<%= h.changeCase.pascalCase(name) %>/ViewController.swift
+to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(config.name) %>/ViewController.swift
 ---
 //
 //  ViewController.swift
-//  <%= h.changeCase.pascalCase(name) %>
+//  <%= h.changeCase.pascalCase(config.name) %>
 //
 //  Created by Daniel Leping on 06/09/2018.
 //  Copyright © 2018 Daniel Leping. All rights reserved.
@@ -122,14 +122,14 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     
     private func changeStatusBarBackground() {
         let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
-        let statusBarColor = UIColor(red: <%= red %>, green: <%= green %>, blue: <%= blue %>, alpha: 1.0)
+        let statusBarColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
         statusBarView.backgroundColor = statusBarColor
         statusBarView.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
         view.addSubview(statusBarView)
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return <%= barStyle %>
+        return .lightContent
     }
 }
 
