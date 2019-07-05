@@ -1,11 +1,11 @@
 ---
-to: <%= h.changeCase.paramCase(config.name) %>/Podfile
+to: <%- h.changeCase.paramCase(config.name) %>/Podfile
 ---
 
 use_frameworks!
 platform :ios, "11.0"
 
-target :<%= h.changeCase.pascalCase(config.name) %> do
+target :<%- h.changeCase.pascalCase(config.name) %> do
   pod 'TesseractSDK/Ethereum', '~> 0.1'
   pod 'Crashlytics'
   pod 'Fabric'

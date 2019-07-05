@@ -1,5 +1,5 @@
 ---
-to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(config.name) %>.xcodeproj/project.pbxproj
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>.xcodeproj/project.pbxproj
 ---
 // !$*UTF8*$!
 {
@@ -19,25 +19,25 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 		65BC9CDE214179F7005D496C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 65BC9CDC214179F7005D496C /* LaunchScreen.storyboard */; };
 		9255B0EE223ED3980019BF9E /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9255B0ED223ED3980019BF9E /* Wallet.swift */; };
 		9255B0F0223ED3A30019BF9E /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9255B0EF223ED3A30019BF9E /* JSON.swift */; };
-		A4C32B64597926F41B4F823C /* Pods_<%= h.changeCase.pascalCase(config.name) %>.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63947EE1B0C78F86569459AF /* Pods_<%= h.changeCase.pascalCase(config.name) %>.framework */; };
+		A4C32B64597926F41B4F823C /* Pods_<%- h.changeCase.pascalCase(config.name) %>.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63947EE1B0C78F86569459AF /* Pods_<%- h.changeCase.pascalCase(config.name) %>.framework */; };
 		D1624C5222BC04E100D3AAB0 /* web3.min.js in Resources */ = {isa = PBXBuildFile; fileRef = D1624C5122BC04E100D3AAB0 /* web3.min.js */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		63947EE1B0C78F86569459AF /* Pods_<%= h.changeCase.pascalCase(config.name) %>.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_<%= h.changeCase.pascalCase(config.name) %>.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		63947EE1B0C78F86569459AF /* Pods_<%- h.changeCase.pascalCase(config.name) %>.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_<%- h.changeCase.pascalCase(config.name) %>.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		65223F70214D986200D937A9 /* Web3Provider.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Web3Provider.js; sourceTree = "<group>"; };
 		65223F72214D9AE200D937A9 /* TesWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TesWebView.swift; sourceTree = "<group>"; };
-		65BC9CD1214179F6005D496C /* <%= h.changeCase.pascalCase(config.name) %>.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = <%= h.changeCase.pascalCase(config.name) %>.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		65BC9CD1214179F6005D496C /* <%- h.changeCase.pascalCase(config.name) %>.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = <%- h.changeCase.pascalCase(config.name) %>.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		65BC9CD3214179F6005D496C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		65BC9CD5214179F6005D496C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		65BC9CD8214179F6005D496C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		65BC9CDA214179F7005D496C /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		65BC9CDD214179F7005D496C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		65BC9CDF214179F7005D496C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7C378D3BE656103BFEE468A1 /* Pods-<%= h.changeCase.pascalCase(config.name) %>.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-<%= h.changeCase.pascalCase(config.name) %>.debug.xcconfig"; path = "Pods/Target Support Files/Pods-<%= h.changeCase.pascalCase(config.name) %>/Pods-<%= h.changeCase.pascalCase(config.name) %>.debug.xcconfig"; sourceTree = "<group>"; };
+		7C378D3BE656103BFEE468A1 /* Pods-<%- h.changeCase.pascalCase(config.name) %>.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-<%- h.changeCase.pascalCase(config.name) %>.debug.xcconfig"; path = "Pods/Target Support Files/Pods-<%- h.changeCase.pascalCase(config.name) %>/Pods-<%- h.changeCase.pascalCase(config.name) %>.debug.xcconfig"; sourceTree = "<group>"; };
 		9255B0ED223ED3980019BF9E /* Wallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
 		9255B0EF223ED3A30019BF9E /* JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
-		B3388ABF89791A01AF34F51C /* Pods-<%= h.changeCase.pascalCase(config.name) %>.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-<%= h.changeCase.pascalCase(config.name) %>.release.xcconfig"; path = "Pods/Target Support Files/Pods-<%= h.changeCase.pascalCase(config.name) %>/Pods-<%= h.changeCase.pascalCase(config.name) %>.release.xcconfig"; sourceTree = "<group>"; };
+		B3388ABF89791A01AF34F51C /* Pods-<%- h.changeCase.pascalCase(config.name) %>.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-<%- h.changeCase.pascalCase(config.name) %>.release.xcconfig"; path = "Pods/Target Support Files/Pods-<%- h.changeCase.pascalCase(config.name) %>/Pods-<%- h.changeCase.pascalCase(config.name) %>.release.xcconfig"; sourceTree = "<group>"; };
 		D1624C5122BC04E100D3AAB0 /* web3.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = web3.min.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -46,7 +46,7 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A4C32B64597926F41B4F823C /* Pods_<%= h.changeCase.pascalCase(config.name) %>.framework in Frameworks */,
+				A4C32B64597926F41B4F823C /* Pods_<%- h.changeCase.pascalCase(config.name) %>.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,8 +56,8 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 	34B405537695521A5BEDE93F /* Pods */ = {
 		isa = PBXGroup;
 		children = (
-			7C378D3BE656103BFEE468A1 /* Pods-<%= h.changeCase.pascalCase(config.name) %>.debug.xcconfig */,
-			B3388ABF89791A01AF34F51C /* Pods-<%= h.changeCase.pascalCase(config.name) %>.release.xcconfig */,
+			7C378D3BE656103BFEE468A1 /* Pods-<%- h.changeCase.pascalCase(config.name) %>.debug.xcconfig */,
+			B3388ABF89791A01AF34F51C /* Pods-<%- h.changeCase.pascalCase(config.name) %>.release.xcconfig */,
 		);
 		name = Pods;
 		sourceTree = "<group>";
@@ -65,7 +65,7 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 	658B1223214179000033430A = {
 		isa = PBXGroup;
 		children = (
-			65BC9CD2214179F6005D496C /* <%= h.changeCase.pascalCase(config.name) %> */,
+			65BC9CD2214179F6005D496C /* <%- h.changeCase.pascalCase(config.name) %> */,
 			658B122D214179000033430A /* Products */,
 			34B405537695521A5BEDE93F /* Pods */,
 			D21AA81160389222522E8332 /* Frameworks */,
@@ -75,12 +75,12 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 	658B122D214179000033430A /* Products */ = {
 		isa = PBXGroup;
 		children = (
-			65BC9CD1214179F6005D496C /* <%= h.changeCase.pascalCase(config.name) %>.app */,
+			65BC9CD1214179F6005D496C /* <%- h.changeCase.pascalCase(config.name) %>.app */,
 		);
 		name = Products;
 		sourceTree = "<group>";
 	};
-	65BC9CD2214179F6005D496C /* <%= h.changeCase.pascalCase(config.name) %> */ = {
+	65BC9CD2214179F6005D496C /* <%- h.changeCase.pascalCase(config.name) %> */ = {
 		isa = PBXGroup;
 		children = (
 			65223F72214D9AE200D937A9 /* TesWebView.swift */,
@@ -95,13 +95,13 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 			65223F70214D986200D937A9 /* Web3Provider.js */,
 			D1624C5122BC04E100D3AAB0 /* web3.min.js */,
 		);
-		path = <%= h.changeCase.pascalCase(config.name) %>;
+		path = <%- h.changeCase.pascalCase(config.name) %>;
 		sourceTree = "<group>";
 	};
 	D21AA81160389222522E8332 /* Frameworks */ = {
 		isa = PBXGroup;
 		children = (
-			63947EE1B0C78F86569459AF /* Pods_<%= h.changeCase.pascalCase(config.name) %>.framework */,
+			63947EE1B0C78F86569459AF /* Pods_<%- h.changeCase.pascalCase(config.name) %>.framework */,
 		);
 		name = Frameworks;
 		sourceTree = "<group>";
@@ -109,9 +109,9 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		65BC9CD0214179F6005D496C /* <%= h.changeCase.pascalCase(config.name) %> */ = {
+		65BC9CD0214179F6005D496C /* <%- h.changeCase.pascalCase(config.name) %> */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 65BC9CE0214179F7005D496C /* Build configuration list for PBXNativeTarget "<%= h.changeCase.pascalCase(config.name) %>" */;
+			buildConfigurationList = 65BC9CE0214179F7005D496C /* Build configuration list for PBXNativeTarget "<%- h.changeCase.pascalCase(config.name) %>" */;
 			buildPhases = (
 				4591DC9211F56D2D33EEFBFF /* [CP] Check Pods Manifest.lock */,
 				65BC9CCD214179F6005D496C /* Sources */,
@@ -124,9 +124,9 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 			);
 			dependencies = (
 			);
-			name = <%= h.changeCase.pascalCase(config.name) %>;
+			name = <%- h.changeCase.pascalCase(config.name) %>;
 			productName = CryptoKitties;
-			productReference = 65BC9CD1214179F6005D496C /* <%= h.changeCase.pascalCase(config.name) %>.app */;
+			productReference = 65BC9CD1214179F6005D496C /* <%- h.changeCase.pascalCase(config.name) %>.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -149,7 +149,7 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 					};
 				};
 			};
-			buildConfigurationList = 658B1227214179000033430A /* Build configuration list for PBXProject "<%= h.changeCase.pascalCase(config.name) %>" */;
+			buildConfigurationList = 658B1227214179000033430A /* Build configuration list for PBXProject "<%- h.changeCase.pascalCase(config.name) %>" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -162,7 +162,7 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				65BC9CD0214179F6005D496C /* <%= h.changeCase.pascalCase(config.name) %> */,
+				65BC9CD0214179F6005D496C /* <%- h.changeCase.pascalCase(config.name) %> */,
 			);
 		};
 /* End PBXProject section */
@@ -194,7 +194,7 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-<%= h.changeCase.pascalCase(config.name) %>-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-<%- h.changeCase.pascalCase(config.name) %>-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -207,15 +207,15 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-<%= h.changeCase.pascalCase(config.name) %>/Pods-<%= h.changeCase.pascalCase(config.name) %>-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-<%- h.changeCase.pascalCase(config.name) %>/Pods-<%- h.changeCase.pascalCase(config.name) %>-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-<%= h.changeCase.pascalCase(config.name) %>/Pods-<%= h.changeCase.pascalCase(config.name) %>-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-<%- h.changeCase.pascalCase(config.name) %>/Pods-<%- h.changeCase.pascalCase(config.name) %>-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-<%= h.changeCase.pascalCase(config.name) %>/Pods-<%= h.changeCase.pascalCase(config.name) %>-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-<%- h.changeCase.pascalCase(config.name) %>/Pods-<%- h.changeCase.pascalCase(config.name) %>-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		92E5131F21815477006184A5 /* Run Crashlytics */ = {
@@ -391,19 +391,19 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 		};
 		65BC9CE1214179F7005D496C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7C378D3BE656103BFEE468A1 /* Pods-<%= h.changeCase.pascalCase(config.name) %>.debug.xcconfig */;
+			baseConfigurationReference = 7C378D3BE656103BFEE468A1 /* Pods-<%- h.changeCase.pascalCase(config.name) %>.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 273G6YKLSK;
-				INFOPLIST_FILE = "$(SRCROOT)/<%= h.changeCase.pascalCase(config.name) %>/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/<%- h.changeCase.pascalCase(config.name) %>/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = one.tesseract.<%= h.changeCase.paramCase(config.name) %>;
+				PRODUCT_BUNDLE_IDENTIFIER = one.tesseract.<%- h.changeCase.paramCase(config.name) %>;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "Tesseract Development Wildcard";
 				TARGETED_DEVICE_FAMILY = 1;
@@ -412,18 +412,18 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 		};
 		65BC9CE2214179F7005D496C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B3388ABF89791A01AF34F51C /* Pods-<%= h.changeCase.pascalCase(config.name) %>.release.xcconfig */;
+			baseConfigurationReference = B3388ABF89791A01AF34F51C /* Pods-<%- h.changeCase.pascalCase(config.name) %>.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 273G6YKLSK;
-				INFOPLIST_FILE = "$(SRCROOT)/<%= h.changeCase.pascalCase(config.name) %>/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/<%- h.changeCase.pascalCase(config.name) %>/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = one.tesseract.<%= h.changeCase.paramCase(config.name) %>;
+				PRODUCT_BUNDLE_IDENTIFIER = one.tesseract.<%- h.changeCase.paramCase(config.name) %>;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "Tesseract Development Wildcard";
 				TARGETED_DEVICE_FAMILY = 1;
@@ -433,7 +433,7 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		658B1227214179000033430A /* Build configuration list for PBXProject "<%= h.changeCase.pascalCase(config.name) %>" */ = {
+		658B1227214179000033430A /* Build configuration list for PBXProject "<%- h.changeCase.pascalCase(config.name) %>" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				658B123C214179010033430A /* Debug */,
@@ -442,7 +442,7 @@ to: <%= h.changeCase.paramCase(config.name) %>/<%= h.changeCase.pascalCase(confi
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		65BC9CE0214179F7005D496C /* Build configuration list for PBXNativeTarget "<%= h.changeCase.pascalCase(config.name) %>" */ = {
+		65BC9CE0214179F7005D496C /* Build configuration list for PBXNativeTarget "<%- h.changeCase.pascalCase(config.name) %>" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				65BC9CE1214179F7005D496C /* Debug */,

@@ -1,5 +1,4 @@
 ---
-to: <%= h.changeCase.paramCase(config.name) %>/config.json
+to: <%- h.changeCase.paramCase(config.name) %>/config.json
 ---
-
-<%= h.jsonString(config.appConfig, false) %>
+<%- h.jsonString(config.appConfig, false) %>
