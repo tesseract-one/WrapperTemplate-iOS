@@ -1,0 +1,307 @@
+---
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>/OpenWalletProxy.swift
+---
+//
+//  OpenWalletProxy.swift
+//  <%- h.changeCase.pascalCase(config.name) %>
+//
+//  Created by Yehor Popovych on 7/9/19.
+//  Copyright © 2019 Tesseract Systems, Inc. All rights reserved.
+//
+
+import Foundation
+import Serializable
+import EthereumWeb3
+import Tesseract
+import OpenWallet
+
+private let NOT_SUPPORTED: SerializableError = ["type": "NOT_SUPPORTED", "message": "API is not supported"]
+
+private extension SerializableError {
+    static func notSupported(_ method: String) -> SerializableError {
+        return ["type": "METHOD_NOT_SUPPORTED", "message": "Method not supported: \(method)"]
+    }
+}
+
+private extension SerializableValue {
+    static func fromEncodable<T: Encodable>(_ encodable: T) -> Swift.Result<SerializableValueEncodable, SerializableError> {
+        do {
+            let data = try OpenWalletNode.encoder.encode(encodable)
+            return try .success(
+                OpenWalletMessage.decoder.decode(SerializableValue.self, from: data)
+            )
+        } catch let err {
+            return .failure(.error(err))
+        }
+    }
+}
+
+class OpenWalletNode {
+    private var subscription: WebSinkUnsubscriber?
+    private let rpcUrls: Dictionary<UInt64, URL>
+    private let openWallet: OpenWallet
+    private var web3: Dictionary<UInt64, Web3>
+    
+    init(rpcUrls: Dictionary<String, URL>, openWallet: OpenWallet) {
+        self.openWallet = openWallet
+        self.rpcUrls = Dictionary(uniqueKeysWithValues: rpcUrls.map { key, val in
+            (UInt64(key)!, val)
+        })
+        self.web3 = [:]
+    }
+    
+    func link(with webView: WebView) {
+        if let subs = subscription {
+            subs()
+        }
+        subscription = webView.on(OpenWalletMessage.self, with: self.onMessage)
+    }
+    
+    private func getWeb3(netId: UInt64) -> Web3? {
+        if let web3 = self.web3[netId] {
+            return web3
+        }
+        guard let url = self.rpcUrls[netId] else {
+            return nil
+        }
+        let web3 = Tesseract.Ethereum.Web3(rpcUrl: url.absoluteString)
+        self.web3[netId] = web3
+        return web3
+    }
+    
+    private func onMessage(sink: WebSink, message: OpenWalletMessage) {
+        switch message.type {
+        case "OPENWALLET_HAS_API":
+            self.reply(
+                sink: sink, id: message.id,
+                result: self.hasApi(api: message.request["type"]!.string!)
+            )
+        case "OPENWALLET_KEYCHAIN_ETHEREUM":
+            self.keychainEthereum(message: message.request) { result in
+                self.reply(sink: sink, id: message.id, result: result)
+            }
+        case "OPENWALLET_NODE_ETHEREUM":
+            let request = message.request
+            if request["method"]?.string?.starts(with: "opw_") ?? false {
+                self.openWalletEthereumNode(message: request) { result in
+                    self.reply(sink: sink, id: message.id, result: result)
+                }
+            } else {
+                guard let int = request["networkId"]?.int, let netId = UInt64(exactly: int), let web3 = getWeb3(netId: netId) else {
+                    self.reply(
+                        sink: sink, id: message.id,
+                        result: .failure([
+                            "type": "NOT_SUPPORTED_NETID",
+                            "message": "Network \"\(request["networkId"]?.int ?? 0)\" is not supported"
+                            ])
+                    )
+                    break
+                }
+                self.ethereumNode(web3: web3, message: request) { result in
+                    self.reply(sink: sink, id: message.id, result: result)
+                }
+            }
+            
+        default:
+            self.reply(sink: sink, id: message.id, result: .failure(NOT_SUPPORTED))
+        }
+    }
+    
+    private func reply(sink: WebSink, id: Int, result: Swift.Result<SerializableValueEncodable, SerializableError>) {
+        var message: Dictionary<String, SerializableValueEncodable> = [
+            "version": "1.0",
+            "id": id
+        ]
+        switch result {
+        case .failure(let err):
+            message["error"] = err
+            message["response"] = .nil
+        case .success(let response):
+            message["response"] = response
+            message["error"] = .nil
+        }
+        sink.send(message: SerializableValue(message))
+    }
+    
+    deinit {
+        if let subs = subscription {
+            subs()
+        }
+    }
+}
+
+private extension OpenWalletNode {
+    func hasApi(api: String) -> Swift.Result<SerializableValueEncodable, SerializableError> {
+        switch api {
+        case "KEYCHAIN_ETHEREUM":
+            return openWallet.walletHasAPI(keychain: .Ethereum)
+                ? .success(true)
+                : .failure(NOT_SUPPORTED)
+        case "NODE_ETHEREUM": return .success(true)
+        default: return .failure(NOT_SUPPORTED)
+        }
+    }
+}
+
+private extension OpenWalletNode {
+    func keychainEthereum(
+        message: Dictionary<String, SerializableValue>,
+        result: @escaping (Swift.Result<SerializableValueEncodable, SerializableError>) -> Void
+    ) {
+        let method = message["method"]!.string!
+        switch method {
+        case EthereumAccountKeychainRequest.method:
+            let req = try! OpenWalletMessage.decoder.decode(
+                EthereumAccountKeychainRequest.self,
+                from: SerializableValue(message).jsonData
+            )
+            openWallet.keychain(net: .Ethereum, request: req) { res in
+                result(res.map{$0}.mapError{.error($0)})
+            }
+        case EthereumSignTxKeychainRequest.method:
+            let req = try! OpenWalletMessage.decoder.decode(
+                EthereumSignTxKeychainRequest.self,
+                from: SerializableValue(message).jsonData
+            )
+            openWallet.keychain(net: .Ethereum, request: req) { res in
+                result(res.map{$0.trimmedHex}.mapError{.error($0)})
+            }
+        case EthereumSignDataKeychainRequest.method:
+            let req = try! OpenWalletMessage.decoder.decode(
+                EthereumSignDataKeychainRequest.self,
+                from: SerializableValue(message).jsonData
+            )
+            openWallet.keychain(net: .Ethereum, request: req) { res in
+                result(res.map{$0.trimmedHex}.mapError{.error($0)})
+            }
+        case EthereumSignTypedDataKeychainRequest.method:
+            let req = try! OpenWalletMessage.decoder.decode(
+                EthereumSignTypedDataKeychainRequest.self,
+                from: SerializableValue(message).jsonData
+            )
+            openWallet.keychain(net: .Ethereum, request: req) { res in
+                result(res.map{$0.trimmedHex}.mapError{.error($0)})
+            }
+        default: result(.failure(.notSupported(method)))
+        }
+    }
+}
+
+private extension OpenWalletNode {
+    static let disallowed_methods = [
+        "eth_sendTransaction", "eth_sign", "personal_sign", "eth_requestAccounts",
+        "eth_accounts", "eth_coinbase"
+    ]
+    
+    static let encoder = JSONEncoder()
+    
+    func eth_baseReq(
+        web3: Web3,
+        message: Dictionary<String, SerializableValue>,
+        result: @escaping (Swift.Result<SerializableValueEncodable, SerializableError>) -> Void
+    ) {
+        var req = message
+        req["id"] = web3.rpcId.serializable
+        req.removeValue(forKey: "networkId")
+        web3.provider.dataProvider.send(data: SerializableValue(req).jsonData) { response in
+            let res: Swift.Result<SerializableValueEncodable, SerializableError> = response
+                .flatMap { res in
+                    let js = try! OpenWalletMessage.decoder.decode(SerializableValue.self, from: res)
+                    if let error = js.object?["error"] {
+                        do {
+                            let rpcError = try OpenWalletMessage.decoder.decode(
+                                RPCError.self, from: error.jsonData
+                            )
+                            return .failure(ProviderError.rpcError(rpcError))
+                        } catch let err {
+                            return .failure(err)
+                        }
+                        
+                    }
+                    return .success(js.object!["result"])
+                }
+                .mapError { .error($0) }
+            result(res)
+        }
+    }
+    
+    func ethereumNode(
+        web3: Web3,
+        message: Dictionary<String, SerializableValue>,
+        result: @escaping (Swift.Result<SerializableValueEncodable, SerializableError>) -> Void
+    ) {
+        guard let method = message["method"]?.string else {
+            result(.failure(NOT_SUPPORTED))
+            return
+        }
+        let disallowed = OpenWalletNode.disallowed_methods.first { method.starts(with: $0) }
+        guard disallowed == nil else {
+            result(.failure(.notSupported(method)))
+            return
+        }
+        
+        switch method {
+        case "eth_newFilter":
+            let data = SerializableValue(message).jsonData
+            let params = try! OpenWalletMessage.decoder.decode(
+                RPCRequest<[NewFilterParams]>.self, from: data
+            ).params[0]
+            web3.eth.newFilter(
+                fromBlock: params.fromBlock, toBlock: params.toBlock,
+                address: params.address, topics: params.topics
+            ) { res in
+                result(res.map{$0.hex}.mapError{.error($0)})
+            }
+        case "eth_newPendingTransactionFilter":
+            web3.eth.newPendingTransactionFilter() { res in
+                result(res.map{$0.hex}.mapError{.error($0)})
+            }
+        case "eth_newBlockFilter":
+            web3.eth.newBlockFilter() { res in
+                result(res.map{$0.hex}.mapError{.error($0)})
+            }
+        case "eth_getFilterLogs":
+            let data = SerializableValue(message).jsonData
+            let quantity = try! OpenWalletMessage.decoder.decode(
+                RPCRequest<[Ethereum.Value]>.self, from: data
+            ).params[0]
+            web3.eth.getFilterLogs(id: quantity.quantity!) { res in
+                result(res.mapError{.error($0)}.flatMap(SerializableValue.fromEncodable))
+            }
+        case "eth_getFilterChanges":
+            let data = SerializableValue(message).jsonData
+            let quantity = try! OpenWalletMessage.decoder.decode(
+                RPCRequest<[Ethereum.Value]>.self, from: data
+            ).params[0]
+            web3.eth.getFilterChanges(id: quantity.quantity!) { res in
+                result(res.mapError{.error($0)}.flatMap(SerializableValue.fromEncodable))
+            }
+        case "eth_uninstallFilter":
+            let data = SerializableValue(message).jsonData
+            let quantity = try! OpenWalletMessage.decoder.decode(
+                RPCRequest<[Ethereum.Value]>.self, from: data
+            ).params[0]
+            web3.eth.uninstallFilter(id: quantity.quantity!) { res in
+                result(res.mapError{.error($0)}.flatMap(SerializableValue.fromEncodable))
+            }
+        default: self.eth_baseReq(web3: web3, message: message, result: result)
+        }
+    }
+}
+
+private extension OpenWalletNode {
+    func openWalletEthereumNode(
+        message: Dictionary<String, SerializableValue>,
+        result: @escaping (Swift.Result<SerializableValueEncodable, SerializableError>) -> Void
+    ) {
+        guard let method = message["method"]?.string else {
+            result(.failure(NOT_SUPPORTED))
+            return
+        }
+        switch method {
+        case "opw_supportedNetworks":
+            result(.success(Array(rpcUrls.keys.map{Int($0)})))
+        default: result(.failure(.notSupported(method)))
+        }
+    }
+}

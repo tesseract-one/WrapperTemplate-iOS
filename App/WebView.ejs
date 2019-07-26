@@ -1,0 +1,130 @@
+---
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>/WebView.swift
+---
+//
+//  WebView.swift
+//  <%- h.changeCase.pascalCase(config.name) %>
+//
+//  Created by Daniel Leping on 15/09/2018.
+//  Copyright © 2018 Daniel Leping. All rights reserved.
+//
+
+import Foundation
+import WebKit
+import Tesseract
+import Serializable
+
+
+protocol WebSink: class {
+    func send(message: SerializableValueEncodable)
+}
+
+typealias WebRecepient<T: JSMessage> = (WebSink, T) -> Void
+
+typealias WebSinkUnsubscriber = () -> Void
+
+private class WebViewMessageHandler: NSObject, WKScriptMessageHandler {
+    private var recepients: Dictionary<String, [Int : (WebSink, JSMessage) -> Void]>
+    private var types: Dictionary<String, JSMessage.Type>
+    private var index: Int
+    
+    weak var sink:WebSink? = nil
+    
+    public override init() {
+        recepients = [:]
+        types = [UnknownMessage.jsType.rawValue: UnknownMessage.self]
+        index = 0
+        super.init()
+    }
+    
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard let sink = sink else {
+            fatalError()
+        }
+        
+        let type = types[message.name] ?? types[UnknownMessage.jsType.rawValue]!
+        
+        guard let listeners = recepients[type.jsType.rawValue]?.values, !listeners.isEmpty else {
+            print("Unhandled message: ", message.name, message.body)
+            return
+        }
+        
+        guard let msg = try? type.from(name: message.name, js: message.body) else {
+            print("Can't parse message: ", message.name, message.body)
+            return
+        }
+            
+        for listener in listeners {
+            listener(sink, msg)
+        }
+    }
+    
+    func on<T: JSMessage>(_ message: T.Type, with listener: @escaping WebRecepient<T>) -> WebSinkUnsubscriber {
+        let type: String = message.jsType.rawValue
+        if types[type] == nil {
+            types[type] = message
+        }
+        var dict = recepients[type] ?? [:]
+        index += 1
+        let id = index
+        dict[id] = { sink, message in
+            listener(sink, message as! T)
+        }
+        recepients[type] = dict
+        return { self.recepients[type]?.removeValue(forKey: id) }
+    }
+}
+
+public class WebView : WKWebView, WebSink {
+    private let messageHandler = WebViewMessageHandler()
+    
+    private static let encoder = JSONEncoder()
+    
+    public init(frame: CGRect) {
+        let js = try! String(contentsOfFile: Bundle.main.path(forResource: "OpenWallet", ofType: "js")!, encoding: .utf8)
+        
+        let userScript = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+        
+        let contentController = WKUserContentController()
+        contentController.addUserScript(userScript)
+        
+        for type in JSMessageType.handlers {
+            contentController.add(messageHandler, name: type.rawValue)
+        }
+        
+        let webViewConfiguration = WKWebViewConfiguration()
+        webViewConfiguration.userContentController = contentController
+        
+        #if !APPSTORE
+            webViewConfiguration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        #endif
+        
+        super.init(frame: frame, configuration: webViewConfiguration)
+        
+        self.allowsBackForwardNavigationGestures = true
+        
+        messageHandler.sink = self
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
+    func on<T: JSMessage>(_ message: T.Type, with recepient: @escaping WebRecepient<T>) -> WebSinkUnsubscriber {
+        return messageHandler.on(message, with: recepient)
+    }
+    
+    func send(message: SerializableValueEncodable) {
+        let serialized = serialize(object: message) ?? "null"
+        DispatchQueue.main.async {
+            self.evaluateJavaScript("window.tesseract._openwallet_accept('\(serialized)');")
+        }
+    }
+    
+    private func serialize(object: SerializableValueEncodable?) -> String? {
+        return object
+            .flatMap { $0.serializable.jsonData }
+            .flatMap { String(data: $0, encoding: .utf8) }
+            .flatMap { $0.replacingOccurrences(of: "'", with: "\\'") }
+    }
+}

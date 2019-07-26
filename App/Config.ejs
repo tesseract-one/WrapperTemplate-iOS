@@ -1,0 +1,44 @@
+---
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>/Config.swift
+---
+//
+//  Config.swift
+//  <%- h.changeCase.pascalCase(config.name) %>
+//
+//  Created by Yehor Popovych on 7/9/19.
+//  Copyright © 2019 Tesseract Systems, Inc. All rights reserved.
+//
+
+import Foundation
+import Serializable
+
+struct URLInfo: Decodable {
+    let url: URL
+    let name: String
+}
+
+struct Config: Decodable {
+    let dappUrls: Dictionary<String, [URLInfo]>
+    let rpcUrls: Dictionary<String, URL>
+    let statusBarColor: String
+    let isLightStatusBar: Bool
+    let progressView: Optional<Dictionary<String, SerializableValue>>
+    let extra: Dictionary<String, SerializableValue>
+    
+    static let `default`: Config = {
+        let url = Bundle.main.url(forResource: "config", withExtension: "json")!
+        let data = try! Data(contentsOf: url)
+        return try! JSONDecoder().decode(Config.self, from: data)
+    }()
+    
+    var activeURLsKey: String {
+        return Bundle.main.infoDictionary?["TesseractActiveServerURLs"] as? String ?? "default"
+    }
+    
+    var activeURLs: [URLInfo] {
+        if let urls = dappUrls[activeURLsKey] {
+            return urls
+        }
+        return dappUrls["default"]!
+    }
+}

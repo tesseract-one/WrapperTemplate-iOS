@@ -49,10 +49,7 @@ extension NSError: SerializableValueEncodable {
 extension SerializableError {
     static func error(_ err: Swift.Error) -> SerializableError {
         if let error = err as? ProviderError, case .rpcError(let rpc) = error {
-            return [
-                "code": rpc.code,
-                "message": rpc.message.replacingOccurrences(of: "\"", with: "\\\"")
-            ]
+            return .web3Error(code: rpc.code, message: rpc.message)
         }
         return [
             "code": (-32000),

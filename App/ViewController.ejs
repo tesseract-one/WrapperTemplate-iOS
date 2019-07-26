@@ -13,25 +13,31 @@ import UIKit
 import WebKit
 import Tesseract
 
-public let TESSERACT_ETHEREUM_ENDPOINTS: Dictionary<UInt64, String> = [
-    1: "https://mainnet.infura.io/v3/f20390fe230e46608572ac4378b70668",
-    2: "https://ropsten.infura.io/v3/f20390fe230e46608572ac4378b70668",
-    3: "https://kovan.infura.io/v3/f20390fe230e46608572ac4378b70668",
-    4: "https://rinkeby.infura.io/v3/f20390fe230e46608572ac4378b70668"
-]
 
 class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
-    var appUrl: URL? = nil
-    var netVersion: UInt64? = nil
+    private let config = Config.default
     
-    var wallet:Wallet? = nil
+    private var openedUrl: URLInfo!
+    private var subscriptions: [WebSinkUnsubscriber] = []
     
-    var loadingView: UIImageView?
+    private let openWalletNode: OpenWalletNode = OpenWalletNode(
+        rpcUrls: Config.default.rpcUrls, openWallet: Tesseract.OpenWallet
+    )
+    
+    var loadingView: LoadingView?
+    
+    var webView: WKWebView?
+    
+    var isSetStatusBarBackground = false
     
     func webView(_ webView: WKWebView,
                  didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
-        print("Provisional navigation error:", error)
+        let alert = UIAlertController(title: "Error", message: "\(error.localizedDescription)\nURL: \(openedUrl.url)", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+            fatalError(error.localizedDescription)
+        }))
+        present(alert, animated: true, completion: nil)
     }
     
     func webView(_ webView: WKWebView,
@@ -43,6 +49,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         guard let loadingView = self.loadingView else { return }
         
+        self.webView?.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), context: nil)
         self.loadingView = nil
         
         UIView.animate(
@@ -50,86 +57,118 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             animations: { loadingView.alpha = 0 }
         ) { _ in
             loadingView.removeFromSuperview()
+            
+            if !self.isSetStatusBarBackground { self.setStatusBarBackground() }
         }
     }
     
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        print("JSLOG:", message)
+        print("**JS**:", message)
         completionHandler()
     }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        let installed = Tesseract.Ethereum.isKeychainInstalled
+    
+    private func openUrl(url: URLInfo) {
+        title = url.name
         
         for view in self.view.subviews {
             view.removeFromSuperview()
         }
         
-        let netVersion: UInt64 = 1
-        let appUrl = URL(string:"https://beta.cent.co")
+        for subscr in subscriptions {
+            subscr()
+        }
+        subscriptions = []
         
-        let webView = TesWebView(
-            frame: self.view.frame,
-            installed: installed,
-            networkId: netVersion,
-            account: UserDefaults.standard.account
-        )
+        let webView = WebView(frame: self.view.frame)
+        self.webView = webView
         
-
-        let endpoint = TESSERACT_ETHEREUM_ENDPOINTS[netVersion]!
+        let unknownSubscr = webView.on(UnknownMessage.self) { _, m in
+            print("Unknown message: ", m.name, " with payload: ", m.body)
+        }
+        let openSubscr = webView.on(OpenURLMessage.self) { _, m in
+            UIApplication.shared.open(m.url, options: [:], completionHandler: nil)
+        }
         
-        wallet = Wallet(
-            web3: Tesseract.Ethereum.Web3(rpcUrl: endpoint),
-            netId: netVersion,
-            webState: webView
-        )
-        
-        let myRequest = URLRequest(url: appUrl!)
-        
-        title = appUrl?.host
-    
-        wallet?.link(web: webView)
+        subscriptions.append(unknownSubscr)
+        subscriptions.append(openSubscr)
+       
+        openWalletNode.link(with: webView)
         
         self.view.addSubview(webView)
         
         webView.translatesAutoresizingMaskIntoConstraints = false
-        let attributes: [NSLayoutConstraint.Attribute] = [.bottom, .top, .right, .left]
+        let attributes: [NSLayoutConstraint.Attribute] = [.top, .bottom, .right, .left]
         NSLayoutConstraint.activate(attributes.map {
             NSLayoutConstraint(item: webView, attribute: $0, relatedBy: .equal, toItem: webView.superview, attribute: $0, multiplier: 1, constant: 0)
         })
         
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
+        
         webView.uiDelegate = self
         webView.navigationDelegate = self
-        webView.load(myRequest)
+        webView.load(URLRequest(url: url.url))
         
-        let imageView = UIImageView(image: UIImage(named: "SplashImage"))
-        imageView.contentMode = .scaleToFill
+        let loadingView = LoadingView.create()
+        config.progressView != nil
+            ? loadingView.setProps(props: LoadingViewProps(jsonProps: config.progressView!))
+            : loadingView.removeProgressView()
+        loadingView.translatesAutoresizingMaskIntoConstraints = false
         
-        self.view.addSubview(imageView)
+        self.view.addSubview(loadingView)
         
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate(attributes[1...].map {
-            NSLayoutConstraint(item: imageView, attribute: $0, relatedBy: .equal, toItem: imageView.superview!.safeAreaLayoutGuide, attribute: $0, multiplier: 1, constant: 0)
+        NSLayoutConstraint.activate(attributes.map {
+            NSLayoutConstraint(item: loadingView, attribute: $0, relatedBy: .equal, toItem: loadingView.superview!, attribute: $0, multiplier: 1, constant: 0)
         })
-        NSLayoutConstraint.activate([NSLayoutConstraint(item: imageView, attribute: .bottom, relatedBy: .equal, toItem: imageView.superview!, attribute: .bottom, multiplier: 1, constant: 0)
-        ])
-        loadingView = imageView
-        // Do any additional setup after loading the view, typically from a nib.
-        changeStatusBarBackground()
+        self.loadingView = loadingView
+        
+        self.openedUrl = url
     }
     
-    private func changeStatusBarBackground() {
+    override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?)
+    {
+        if (event?.subtype == .some(.motionShake) && config.activeURLs.count > 1) {
+            let alert = UIAlertController(title: "Select URL", message: "Choose application URL", preferredStyle: .actionSheet)
+            for url in config.activeURLs {
+                let action = UIAlertAction(title: url.name, style: .default) { _ in
+                    self.openUrl(url: url)
+                }
+                alert.addAction(action)
+            }
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "estimatedProgress" {
+            loadingView?.progressView.setProgress(webView?.estimatedProgress ?? 0)
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        openUrl(url: config.activeURLs[0])
+    }
+
+    private func setStatusBarBackground() {
         let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
-        let statusBarColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
-        statusBarView.backgroundColor = statusBarColor
+        statusBarView.backgroundColor = UIColor(hex: config.statusBarColor)
         statusBarView.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
         view.addSubview(statusBarView)
+        
+        isSetStatusBarBackground = true
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
+        return config.isLightStatusBar ? .lightContent : .default
+    }
+    
+    deinit {
+        if loadingView != nil {
+            webView?.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), context: nil)
+        }
+        for subscr in subscriptions {
+            subscr()
+        }
     }
 }
-

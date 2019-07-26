@@ -1,0 +1,108 @@
+---
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>/LoadingView.swift
+---
+//
+//  LoadingView.swift
+//  <%- h.changeCase.pascalCase(config.name) %>
+//
+//  Created by Yura Kulynych on 5/31/19.
+//  Copyright © 2019 Tesseract Systems, Inc. All rights reserved.
+//
+
+import Foundation
+import Serializable
+import UIKit
+
+struct LoadingViewProps {
+    let topPaddingPercents: Double?
+    let bottomPaddingPercents: Double?
+    let leftPadding: Int
+    let rightPadding: Int
+    let height: Int
+    let cornerRadius: Int
+    let foregroundColor: UIColor
+    let backgroundColor: UIColor?
+    
+    init(jsonProps: Dictionary<String, SerializableValue>) {
+        self.topPaddingPercents = jsonProps["topPaddingPercents"]?.float ?? nil
+        self.bottomPaddingPercents = jsonProps["bottomPaddingPercents"]?.float ?? nil
+        
+        self.leftPadding = jsonProps["leftPadding"]!.int!
+        self.rightPadding = jsonProps["rightPadding"]!.int!
+        self.height = jsonProps["height"]!.int!
+        self.cornerRadius = jsonProps["cornerRadius"]!.int!
+        self.foregroundColor = UIColor(hex: jsonProps["foregroundColor"]!.string!)
+
+        let backgroundColor = jsonProps["backgroundColor"]?.string ?? nil
+        self.backgroundColor = backgroundColor != nil ? UIColor(hex: backgroundColor!) : nil
+        
+        validateVerticalPadding(self.topPaddingPercents, self.bottomPaddingPercents)
+    }
+    
+    init(_ topPaddingPercents: Double?, _ bottomPaddingPercents: Double?, _ leftPadding: Int, _ rightPadding: Int, _ height: Int, _ cornerRadius: Int, _ foregroundColor: UIColor, _ backgroundColor: UIColor) {
+        self.topPaddingPercents = topPaddingPercents
+        self.bottomPaddingPercents = bottomPaddingPercents
+        self.leftPadding = leftPadding
+        self.rightPadding = rightPadding
+        self.height = height
+        self.cornerRadius = cornerRadius
+        self.foregroundColor = foregroundColor
+        self.backgroundColor = backgroundColor
+        
+        validateVerticalPadding(topPaddingPercents, bottomPaddingPercents)
+    }
+    
+    private func validateVerticalPadding(_ topPadding: Double?, _ bottomPadding: Double?) {
+        guard (topPadding != nil && topPadding! > 0.0 && topPadding! < 1.0)
+            || (bottomPadding != nil && bottomPadding! > 0.0 && bottomPadding! < 1.0) else {
+                fatalError("Iconrrect or missed top/bottom padding.")
+        }
+    }
+}
+
+class LoadingView: UIView {
+    
+    @IBOutlet weak var progressContainerView: UIView!
+    @IBOutlet weak var progressView: ProgressView!
+    
+    @IBOutlet weak var progressContainerHeight: NSLayoutConstraint!
+    @IBOutlet weak var progressLeading: NSLayoutConstraint!
+    @IBOutlet weak var progressTrailing: NSLayoutConstraint!
+    @IBOutlet weak var progressHeight: NSLayoutConstraint!
+    
+    static func create() -> LoadingView {
+        let bundle = Bundle(for: LoadingView.self)
+        let views = bundle.loadNibNamed("LoadingView", owner: nil, options: nil)!
+        return views[0] as! LoadingView
+    }
+    
+    public func setProps(props: LoadingViewProps) {
+        let multiplier = props.bottomPaddingPercents != nil
+            ? CGFloat(props.bottomPaddingPercents!)
+            : CGFloat(1 - props.topPaddingPercents!)
+        NSLayoutConstraint.deactivate([progressContainerHeight])
+        NSLayoutConstraint.activate([NSLayoutConstraint(item: progressContainerView!, attribute: .height, relatedBy: .equal, toItem: progressContainerView.superview, attribute: .height, multiplier: multiplier, constant: 0)])
+        
+        progressLeading.constant = CGFloat(props.leftPadding)
+        progressTrailing.constant = CGFloat(props.rightPadding)
+        progressHeight.constant = CGFloat(props.height)
+        progressView.cornerRadius = CGFloat(props.cornerRadius)
+        progressView.backgroundColor = props.backgroundColor ?? .clear
+        progressView.progressBackgroundColor = props.foregroundColor
+        
+        updateConstraintsIfNeeded()
+    }
+    
+    public func removeProgressView() {
+        progressContainerView.removeFromSuperview()
+        progressView.removeFromSuperview()
+        progressContainerView = nil
+        progressView = nil
+        
+        updateConstraintsIfNeeded()
+    }
+    
+    public func setProgress(_ progress: Double) {
+        progressView.setProgress(progress)
+    }
+}

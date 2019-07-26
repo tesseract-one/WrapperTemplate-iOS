@@ -1,0 +1,80 @@
+---
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>/Messages.swift
+---
+//
+//  Messages.swift
+//  <%- h.changeCase.pascalCase(config.name) %>
+//
+//  Created by Yehor Popovych on 7/9/19.
+//  Copyright © 2019 Tesseract Systems, Inc. All rights reserved.
+//
+
+import Foundation
+import Serializable
+
+enum JSMessageType: String {
+    case openwallet = "openwallet"
+    case open = "open"
+    case unknown
+    
+    static let handlers: Array<JSMessageType> = [.open, .openwallet]
+}
+
+protocol JSMessage {
+    static var jsType: JSMessageType { get }
+    static func from(name: String, js: Any) throws -> Self
+}
+
+enum JSMessageError: Error {
+    case malformed(js: Any)
+}
+
+struct OpenWalletMessage: JSMessage, Decodable {
+    static let jsType: JSMessageType = .openwallet
+    
+    let id: Int
+    let type: String
+    let request: Dictionary<String, SerializableValue>
+    
+    static func from(name: String, js: Any) throws -> OpenWalletMessage {
+        guard let str = js as? String, let data = str.data(using: .utf8) else {
+            throw JSMessageError.malformed(js: js)
+        }
+        return try OpenWalletMessage.decoder.decode(
+            OpenWalletMessage.self,
+            from: data
+        )
+    }
+    
+    static let decoder: JSONDecoder = {
+        var decoder = JSONDecoder()
+        decoder.dataDecodingStrategy = .base64
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+}
+
+struct OpenURLMessage: JSMessage {
+    static let jsType: JSMessageType = .open
+    
+    let url: URL
+    
+    static func from(name: String, js: Any) throws -> OpenURLMessage {
+        guard let str = js as? String, let url = URL(string: str) else {
+            throw JSMessageError.malformed(js: js)
+        }
+        return OpenURLMessage(url: url)
+    }
+}
+
+struct UnknownMessage: JSMessage {
+    static let jsType: JSMessageType = .unknown
+    
+    var name: String
+    let body: Any
+    
+    static func from(name: String, js: Any) throws -> UnknownMessage {
+        return UnknownMessage(name: name, body: js)
+    }
+}
+

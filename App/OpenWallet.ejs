@@ -1,0 +1,107 @@
+---
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>/OpenWallet.js
+---
+(function(window) {
+  class Wrapper {
+    constructor() {
+      this.__listeners = [];
+      this.__setupOpenHandler();
+    }
+
+    open(url) {
+      window.webkit.messageHandlers.open.postMessage(url);
+    }
+
+    send(message) {
+      const json = JSON.stringify(message);
+      window.webkit.messageHandlers.openwallet.postMessage(json);
+    }
+
+    onMessage(listener) {
+      this.__listeners.push(listener)
+      return () => this.__listeners.splice(this.__listeners.indexOf(listener), 1);
+    }
+
+    _openwallet_accept(message) {
+      const parsed = JSON.parse(message);
+      this.__listeners.forEach(l => l(parsed));
+    }
+
+    log(message) {
+      console.log(message);
+      alert(message);
+    }
+
+    __setupOpenHandler() {
+      window.addEventListener('touchend', (event) => this.__handleTouchEnd(event));
+    }
+
+    __handleTouchEnd(event) {
+      let el = event.target
+
+      while (el && el.tagName && el.tagName.toLowerCase() !== 'a' && el.target !== '_blank') {
+        el = el.parentNode
+        if (el && el.tagName && el.tagName.toLowerCase() === 'body') { return }
+      }
+
+      this.open(el.href);
+    }
+  }
+
+  class OpenWallet {
+    constructor(wrapper) {
+      this.__wrapper = wrapper;
+      this.__callbacks = {};
+      this.__subscriptions = {};
+      this.__messageId = 1;
+      this.__wrapper.onMessage(message => this.__onMessage(message))
+    }
+
+    get version() { return "1.0"; }
+
+    send(message) {
+      message = Object.assign({
+        id: this.__messageId++,
+        version: this.version
+      }, message);
+      const promise = new Promise((resolve, reject) => {
+        this.__callbacks[message.id] = [resolve, reject];
+      })
+      this.__wrapper.send(message);
+      return promise;
+    }
+ 
+    on(type, subscriptionId, listener) {
+      const apiSubs = this.__subscriptions[type] || {};
+      apiSubs[subscriptionId] = listener;
+      this.__subscriptions['OPENWALLET_'+type] = apiSubs;
+      return () => delete this.__subscriptions[type][subscriptionId];
+    }
+
+    __onMessage(message) {
+      if (message.owSubscriptionId !== undefined && message.owSubscriptionId !== null) {
+        const subscription = (this.__subscriptions[message.owSubscriptionType] || {})[message.owSubscriptionId];
+        if (subscription) {
+          subscription(message);
+        } else {
+          this.__wrapper.log('UNHANDLED MESSAGE: ' + JSON.stringify(message));
+        }
+      } else {
+        const [resolve, reject] = this.__callbacks[message.id];
+        if (resolve) {
+          if (message.error) {
+            reject(message.error);
+          } else {
+            resolve(message.response);
+          }
+          delete this.__callbacks[message.id];
+        } else {
+          this.__wrapper.log('UNHANDLED RESPONSE: ' + JSON.stringify(message));
+        }
+      }
+    }
+  }
+
+  window.tesseract = new Wrapper();
+  window.openwallet = new OpenWallet(window.tesseract);
+})(window);

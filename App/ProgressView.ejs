@@ -1,0 +1,110 @@
+---
+to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(config.name) %>/ProgressView.swift
+---
+//
+//  ProgressView.swift
+//  <%- h.changeCase.pascalCase(config.name) %>
+//
+//  Created by Yura Kulynych on 5/30/19.
+//  Copyright © 2019 Tesseract Systems, Inc. All rights reserved.
+//
+
+import UIKit
+
+@IBDesignable
+class ProgressView: UIView {
+    
+    private let progressLayer = CALayer()
+    private var progress: CGFloat = 0
+    
+    @IBInspectable
+    var cornerRadius: CGFloat {
+        get {
+            return layer.cornerRadius
+        }
+        set {
+            layer.masksToBounds = newValue > 0
+            layer.cornerRadius = newValue
+            updateProgressLayerCornerRadius()
+        }
+    }
+    
+    @IBInspectable
+    var progressBackgroundColor: UIColor? {
+        get {
+            return progressLayer.backgroundColor != nil
+                ? UIColor(cgColor: progressLayer.backgroundColor!)
+                : nil
+        }
+        set {
+            progressLayer.backgroundColor = newValue?.cgColor
+        }
+    }
+    
+    override var frame: CGRect {
+        didSet {
+            updateProgressLayerFrame()
+            layer.layoutSublayers()
+        }
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        sharedSetup()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+        sharedSetup()
+    }
+    
+    func sharedSetup() {
+        setupProgressLayer()
+    }
+    
+    func setupProgressLayer() {
+        updateProgressLayerFrame()
+        updateProgressLayerCornerRadius()
+        layer.addSublayer(progressLayer)
+    }
+    
+    func updateProgressLayerFrame() {
+        progressLayer.frame = CGRect(
+            x: bounds.minX,
+            y: bounds.minY,
+            width: bounds.width * progress,
+            height: bounds.height
+        )
+    }
+    
+    func updateProgressLayerCornerRadius() {
+        progressLayer.cornerRadius = cornerRadius
+        progressLayer.masksToBounds = cornerRadius > 0
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.updateProgressLayerFrame()
+    }
+    
+    public func setProgress(_ progress: Double) {
+        self.progress = CGFloat(progress)
+        
+        let oldFrame = progressLayer.frame
+        var newFrame = oldFrame
+        
+        newFrame.size.width = CGFloat(progress) * bounds.width
+        
+        let animation = CABasicAnimation(keyPath: "frame")
+        animation.fromValue = oldFrame
+        animation.toValue = newFrame
+        animation.timingFunction = CAMediaTimingFunction(name: .easeIn)
+        animation.duration = 0.5
+        
+        progressLayer.frame = newFrame
+        
+        progressLayer.animation(forKey: "frame")
+    }
+}
