@@ -36,7 +36,7 @@ struct Config: Decodable {
     }
     
     var activeURLs: [URLInfo] {
-        if let urls = dappUrls[activeURLsKey] {
+        if let urls = dappUrls[activeURLsKey], !urls.isEmpty {
             return urls
         }
         return dappUrls["default"]!

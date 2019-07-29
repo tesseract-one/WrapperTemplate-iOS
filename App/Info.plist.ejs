@@ -8,7 +8,7 @@ to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(confi
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Wrapper</string>
+	<string><%- h.changeCase.pascalCase(config.name) %></string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,20 +23,22 @@ to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(confi
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>Fabric</key>
-	<dict>
-		<key>APIKey</key>
-		<string>$(FABRIC_KEY)</string>
-		<key>Kits</key>
-		<array>
-			<dict>
-				<key>KitInfo</key>
-				<dict/>
-				<key>KitName</key>
-				<string>Crashlytics</string>
-			</dict>
-		</array>
-	</dict>
+	<% if(config.template.fabric){ -%>
+		<key>Fabric</key>
+		<dict>
+			<key>APIKey</key>
+			<string>$(FABRIC_KEY)</string>
+			<key>Kits</key>
+			<array>
+				<dict>
+					<key>KitInfo</key>
+					<dict/>
+					<key>KitName</key>
+					<string>Crashlytics</string>
+				</dict>
+			</array>
+		</dict>
+	<% } -%>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>openwallet-keychain-ethereum</string>
