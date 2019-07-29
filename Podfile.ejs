@@ -7,7 +7,9 @@ platform :ios, "11.0"
 
 target :<%- h.changeCase.pascalCase(config.name) %> do
   pod 'TesseractSDK/Ethereum', '~> 0.1'
-  pod 'Crashlytics'
-  pod 'Fabric'
+  <% if(config.template.fabric){ -%>
+    pod 'Crashlytics'
+    pod 'Fabric'
+  <% } -%>
 end
 

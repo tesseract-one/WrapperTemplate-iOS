@@ -39,12 +39,13 @@ to: <%- h.changeCase.paramCase(config.name) %>/<%- h.changeCase.pascalCase(confi
     __handleTouchEnd(event) {
       let el = event.target
 
-      while (el && el.tagName && el.tagName.toLowerCase() !== 'a' && el.target !== '_blank') {
+      while (el && (!el.tagName || el.tagName.toLowerCase() !== 'a')) {
         el = el.parentNode
-        if (el && el.tagName && el.tagName.toLowerCase() === 'body') { return }
       }
-
-      this.open(el.href);
+ 
+      if (el && el.target == '_blank') {
+        this.open(el.href);
+      }
     }
   }
 

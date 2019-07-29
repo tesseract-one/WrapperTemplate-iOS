@@ -3,8 +3,7 @@
     "resources": {
       "appIcon": "./icon.png",
       "splashImage": "./splash-image.png"
-    },
-    "iosBundleId": ""
+    }
   },
   "appConfig": {
     "statusBarColor": "#222222",
