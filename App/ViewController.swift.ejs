@@ -141,7 +141,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "estimatedProgress" {
-            loadingView?.progressView.setProgress(webView?.estimatedProgress ?? 0)
+            loadingView?.progressView?.setProgress(webView?.estimatedProgress ?? 0)
         }
     }
 
