@@ -164,7 +164,7 @@ private extension OpenWalletNode {
                 from: SerializableValue(message).jsonData
             )
             openWallet.keychain(net: .Ethereum, request: req) { res in
-                result(res.map{$0.trimmedHex}.mapError{.error($0)})
+                result(res.map{$0.base64EncodedString()}.mapError{.error($0)})
             }
         case EthereumSignDataKeychainRequest.method:
             let req = try! OpenWalletMessage.decoder.decode(
@@ -172,7 +172,7 @@ private extension OpenWalletNode {
                 from: SerializableValue(message).jsonData
             )
             openWallet.keychain(net: .Ethereum, request: req) { res in
-                result(res.map{$0.trimmedHex}.mapError{.error($0)})
+                result(res.map{$0.base64EncodedString()}.mapError{.error($0)})
             }
         case EthereumSignTypedDataKeychainRequest.method:
             let req = try! OpenWalletMessage.decoder.decode(
@@ -180,7 +180,7 @@ private extension OpenWalletNode {
                 from: SerializableValue(message).jsonData
             )
             openWallet.keychain(net: .Ethereum, request: req) { res in
-                result(res.map{$0.trimmedHex}.mapError{.error($0)})
+                result(res.map{$0.base64EncodedString()}.mapError{.error($0)})
             }
         default: result(.failure(.notSupported(method)))
         }
